@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <!--Padding padrão / Default padding-->
-  <dimen name="default_padding">16dp</dimen>
+    <!--Padding padrão / Default padding-->
+    <dimen name="default_padding">16dp</dimen>
+    <dimen name="default_mag_wid_hei">36dp</dimen>
+    <dimen name="default_mag_size">16sp</dimen>
+    <dimen name="default_direc_size">12sp</dimen>
+    <dimen name="default_locat_size">16sp</dimen>
+    <dimen name="default_timelike_size">12sp</dimen>
 </resources>

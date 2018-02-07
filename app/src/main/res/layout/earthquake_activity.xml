@@ -14,10 +14,29 @@
      limitations under the License.
 -->
 <!-- Layout for a list of earthquakes -->
-<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:clickable="false"
+        android:indeterminate="false"
+        android:indeterminateDuration="100"
+        android:progress="0"
+        android:visibility="visible" />
+
+    <ListView
     android:id="@+id/list"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:divider="@null"
-    android:dividerHeight="0dp"/>
+        android:dividerHeight="0dp"
+        android:orientation="vertical">
+
+    </ListView>
+</LinearLayout>

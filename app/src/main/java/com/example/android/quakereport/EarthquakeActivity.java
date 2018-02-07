@@ -19,18 +19,29 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,34 +54,29 @@ public class EarthquakeActivity extends AppCompatActivity {
     private final String LOG_TAG = EarthquakeActivity.class.getName();
     private ArrayList<Earthquake> earthquakesList;
     private EarthquakeAdapter adapter;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
 
-        // Create a fake list of earthquake locations.
-        //ArrayList<Earthquake> earthquakes = new ArrayList<>();
-        //earthquakes.add(new Earthquake("4.6", "San Francisco", "Jan 4, 2018"));
-        //earthquakes.add(new Earthquake("2.4","London", "Jan 3, 2018"));
-        //earthquakes.add(new Earthquake("5.1","Tokyo", "Jan 5, 2018"));
-        //earthquakes.add(new Earthquake("3.3","Mexico City", "Jan 4, 2018"));
-        //earthquakes.add(new Earthquake("3.2","Moscow", "Jan 5, 2018"));
-        //earthquakes.add(new Earthquake("1.9","Rio de Janeiro", "Jan 2, 2018"));
-        //earthquakes.add(new Earthquake("3.7","Paris", "Jan 3, 2018"));
+        //Creates reference to progress bar
+        progressBar = findViewById(R.id.progressBar);
 
-        // Find a reference to the {@link ListView} in the layout
+        //Set list for earthquakes
         earthquakesList = new ArrayList<>();
-
-        new GetEarthquakeData().execute();
-
         // Create a new {@link ArrayAdapter} of earthquakes
         adapter = new EarthquakeAdapter(this, earthquakesList);
 
+        // Find a reference to the {@link ListView} in the layout
+        ListView earthquakeListView = findViewById(R.id.list);
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
-        ListView earthquakeListView = findViewById(R.id.list);
         earthquakeListView.setAdapter(adapter);
+
+        //Execute background async task to get earthquake data
+        new GetEarthquakeData().execute();
 
         earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -92,30 +98,61 @@ public class EarthquakeActivity extends AppCompatActivity {
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class GetEarthquakeData extends AsyncTask<Void, Void, Void> {
+    private class GetEarthquakeData extends AsyncTask<Void, Integer, Void> {
+
+        /**
+         * Warn that data is loading
+         */
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
             Toast.makeText(EarthquakeActivity.this, "JSON Data is downloading",
                     Toast.LENGTH_LONG).show();
         }
 
+        /**
+         * Display Toast to inform total number of itens, update adapter
+         * and clear progress bar
+         *
+         * @param aVoid no data passed
+         */
         @Override
         protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            Toast.makeText(getApplicationContext(),
+            Toast.makeText(EarthquakeActivity.this, //getApplicationContext(),
                     "Found " + adapter.getCount() + " itens", Toast.LENGTH_LONG).show();
             adapter.notifyDataSetChanged();
+            progressBar.setVisibility(View.GONE);//progressBar.getLayoutParams().height = 0;
         }
 
+        /**
+         * Update the progress bar
+         *
+         * @param values number to control progress bar
+         */
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            if (progressBar.isIndeterminate()) {
+                progressBar.setIndeterminate(false);
+            }
+            //adapter.notifyDataSetChanged();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                progressBar.setProgress(values[0], true);
+            } else {
+                progressBar.setProgress(values[0]);
+            }
+        }
+
+        /** Fetch JSON data into array list of earthquakes displayed in adapter
+         * @param voids no input data
+         * @return null
+         */
         @Override
         protected Void doInBackground(Void... voids) {
             HttpHandler sh = new HttpHandler();
             // Making a request to url and getting response
-            String url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2017-01-01&endtime=2018-01-15&minmagnitude=5";//"https://earthquake.usgs.gov/fdsnws/event/1/query?starttime=2018-01-10&endtime=2018-01-11&format=geojson&minmagnitude=4.5";
+            String url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2018-01-01&endtime=2018-01-17&minmagnitude=1";
+            //"https://earthquake.usgs.gov/fdsnws/event/1/query?starttime=2018-01-10&endtime=2018-01-11&format=geojson&minmagnitude=4.5";
             String jsonStr = sh.makeServiceCall(url);
 
-            Log.e(LOG_TAG, "Response from url: " + jsonStr);
             if (jsonStr != null) {
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);
@@ -143,11 +180,11 @@ public class EarthquakeActivity extends AppCompatActivity {
                         String hour = dateFormatter.format(new Date(eqprop.getLong("time")));
                         String urlEq = eqprop.getString("url");
                         earthquakesList.add(new Earthquake(mag, place, direction, date, hour, urlEq));
+                        if ((i % (earthquakes.length() / 50)) == 0) {
+                            publishProgress((int) ((i / (float) earthquakes.length()) * 100) + 1);
+                        }
                     }
-                    //Toast.makeText(getApplicationContext(),
-                    //        "Found " + i + "itens", Toast.LENGTH_LONG).show();
-                }
-                catch (final JSONException e) {
+                } catch (final JSONException e) {
                     Log.e(LOG_TAG, "Json parsing error: " + e.getMessage());
                     runOnUiThread(new Runnable() {
                         @Override
@@ -174,4 +211,59 @@ public class EarthquakeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Buffer JSON into string
+     */
+    class HttpHandler {
+
+        private final String TAG = HttpHandler.class.getSimpleName();
+
+        HttpHandler() {
+        }
+
+        String makeServiceCall(String reqUrl) {
+            String response = null;
+            try {
+                URL url = new URL(reqUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                // read the response
+                InputStream in = new BufferedInputStream(conn.getInputStream());
+                response = convertStreamToString(in);
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "MalformedURLException: " + e.getMessage());
+            } catch (ProtocolException e) {
+                Log.e(TAG, "ProtocolException: " + e.getMessage());
+            } catch (IOException e) {
+                Log.e(TAG, "IOException: " + e.getMessage());
+            } catch (Exception e) {
+                Log.e(TAG, "Exception: " + e.getMessage());
+            }
+            return response;
+        }
+
+        private String convertStreamToString(InputStream is) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+
+            progressBar.setIndeterminate(true);
+
+            String line;
+            try {
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return sb.toString();
+        }
+    }
 }

@@ -14,8 +14,7 @@
      limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.android.quakereport">
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -26,7 +25,9 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         android:fullBackupContent="@xml/backup_descriptor">
-        <activity android:name=".EarthquakeActivity">
+        <activity
+            android:name=".EarthquakeActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

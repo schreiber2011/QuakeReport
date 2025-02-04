@@ -55,6 +55,13 @@ public class EarthquakeActivity extends AppCompatActivity {
     private ArrayList<Earthquake> earthquakesList;
     private EarthquakeAdapter adapter;
     private ProgressBar progressBar;
+    /**
+     * URL for earthquake data from the USGS dataset
+     */
+    private static final String USGS_REQUEST_URL =
+            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2018-01-01&endtime=2018-01-17&minmagnitude=1";
+    //"https://earthquake.usgs.gov/fdsnws/event/1/query?starttime=2018-01-10&endtime=2018-01-11&format=geojson&minmagnitude=4.5";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +83,7 @@ public class EarthquakeActivity extends AppCompatActivity {
         earthquakeListView.setAdapter(adapter);
 
         //Execute background async task to get earthquake data
-        new GetEarthquakeData().execute();
+        new GetEarthquakeData().execute(USGS_REQUEST_URL);
 
         earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -98,7 +105,7 @@ public class EarthquakeActivity extends AppCompatActivity {
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class GetEarthquakeData extends AsyncTask<Void, Integer, Void> {
+    private class GetEarthquakeData extends AsyncTask<String, Integer, Void> {
 
         /**
          * Warn that data is loading
@@ -142,16 +149,17 @@ public class EarthquakeActivity extends AppCompatActivity {
         }
 
         /** Fetch JSON data into array list of earthquakes displayed in adapter
-         * @param voids no input data
+         * @param urls no input data
          * @return null
          */
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Void doInBackground(String... urls) {
             HttpHandler sh = new HttpHandler();
             // Making a request to url and getting response
-            String url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2018-01-01&endtime=2018-01-17&minmagnitude=1";
-            //"https://earthquake.usgs.gov/fdsnws/event/1/query?starttime=2018-01-10&endtime=2018-01-11&format=geojson&minmagnitude=4.5";
-            String jsonStr = sh.makeServiceCall(url);
+            if (urls.length < 1 || urls[0] == null) {
+                return null;
+            }
+            String jsonStr = sh.makeServiceCall(urls[0]);
 
             if (jsonStr != null) {
                 try {

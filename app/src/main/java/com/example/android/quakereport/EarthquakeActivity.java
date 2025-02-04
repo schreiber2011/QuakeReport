@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -85,22 +84,19 @@ public class EarthquakeActivity extends AppCompatActivity {
         //Execute background async task to get earthquake data
         new GetEarthquakeData().execute(USGS_REQUEST_URL);
 
-        earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                // Achar o terremoto atual que foi clicado
-                Earthquake currentEarthquake = adapter.getItem(position);
+        earthquakeListView.setOnItemClickListener((adapterView, view, position, l) -> {
+            // Achar o terremoto atual que foi clicado
+            Earthquake currentEarthquake = adapter.getItem(position);
 
-                // Converte o URL String em um objeto URI (para passar no construtor de Intent)
-                assert currentEarthquake != null;
-                Uri earthquakeUri = Uri.parse(currentEarthquake.getmUrl());
+            // Converte o URL String em um objeto URI (para passar no construtor de Intent)
+            assert currentEarthquake != null;
+            Uri earthquakeUri = Uri.parse(currentEarthquake.getmUrl());
 
-                // Cria um novo intent para visualizar a URI do earthquake
-                Intent websiteIntent = new Intent(Intent.ACTION_VIEW, earthquakeUri);
+            // Cria um novo intent para visualizar a URI do earthquake
+            Intent websiteIntent = new Intent(Intent.ACTION_VIEW, earthquakeUri);
 
-                // Envia o intent para lançar uma nova activity
-                startActivity(websiteIntent);
-            }
+            // Envia o intent para lançar uma nova activity
+            startActivity(websiteIntent);
         });
     }
 
@@ -173,12 +169,12 @@ public class EarthquakeActivity extends AppCompatActivity {
                     for (i = 0; i < earthquakes.length(); i++) {
                         JSONObject eq = earthquakes.getJSONObject(i);
                         JSONObject eqprop = eq.getJSONObject("properties");
-                        Double mag = eqprop.getDouble("mag");
+                        double mag = eqprop.getDouble("mag");
                         String place = eqprop.getString("place");
                         String direction;
                         if (place.contains(" of ")) {
                             direction = place.substring(0, place.indexOf(" of ") + 3);
-                            place = place.substring(place.indexOf(LOCATION_SEPARATOR) + 4, place.length());
+                            place = place.substring(place.indexOf(LOCATION_SEPARATOR) + 4);
                         } else {
                             direction = getString(R.string.default_toptext);
                         }
@@ -194,26 +190,16 @@ public class EarthquakeActivity extends AppCompatActivity {
                     }
                 } catch (final JSONException e) {
                     Log.e(LOG_TAG, "Json parsing error: " + e.getMessage());
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(),
-                                    "Json parsing error: " + e.getMessage(),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(),
+                            "Json parsing error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show());
 
                 }
             } else {
                 Log.e(LOG_TAG, "Couldn't get json from server.");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(),
-                                "Couldn't get json from server. Check LogCat for possible errors!",
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+                runOnUiThread(() -> Toast.makeText(getApplicationContext(),
+                        "Couldn't get json from server. Check LogCat for possible errors!",
+                        Toast.LENGTH_LONG).show());
             }
             return null;
         }

@@ -1,25 +1,23 @@
 apply plugin: 'com.android.application'
 
 android {
-    defaultConfig {
-        compileSdk 34
-    }
+    compileSdk = 34
 
     defaultConfig {
-        applicationId "com.example.android.quakereport"
-        minSdkVersion 15
+        applicationId = "com.example.android.quakereport"
+        minSdk = 15
         //noinspection OldTargetApi
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'com.example.android.quakereport'
+    namespace = 'com.example.android.quakereport'
 }
 
 dependencies {

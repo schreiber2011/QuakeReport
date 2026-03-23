@@ -81,30 +81,30 @@ public class EarthquakeActivity extends AppCompatActivity {
         earthquakeListView.setAdapter(adapter);
 
         //Execute background task to get earthquake data
-        fetchEarthquakeData(USGS_REQUEST_URL);
+        fetchEarthquakeData();
 
         earthquakeListView.setOnItemClickListener((adapterView, view, position, l) -> {
-            // Achar o terremoto atual que foi clicado
+            // Find the earthquake that was clicked on
             Earthquake currentEarthquake = adapter.getItem(position);
 
-            // Converte o URL String em um objeto URI (para passar no construtor de Intent)
+            // Convert URL String in an object URI (to pass into the Intent constructor)
             assert currentEarthquake != null;
             Uri earthquakeUri = Uri.parse(currentEarthquake.getmUrl());
 
-            // Cria um novo intent para visualizar a URI do earthquake
+            // Creates a new intent to view the earthquake URI
             Intent websiteIntent = new Intent(Intent.ACTION_VIEW, earthquakeUri);
 
-            // Envia o intent para lançar uma nova activity
+            // Send the intent to launch a new activity
             startActivity(websiteIntent);
         });
     }
 
-    private void fetchEarthquakeData(String url) {
+    private void fetchEarthquakeData() {
         Toast.makeText(this, "JSON Data is downloading", Toast.LENGTH_LONG).show();
         
         executorService.execute(() -> {
             HttpHandler sh = new HttpHandler();
-            String jsonStr = sh.makeServiceCall(url);
+            String jsonStr = sh.makeServiceCall();
             List<Earthquake> fetchedEarthquakes = new ArrayList<>();
 
             if (jsonStr != null) {
@@ -114,9 +114,9 @@ public class EarthquakeActivity extends AppCompatActivity {
 
                     for (int i = 0; i < earthquakes.length(); i++) {
                         JSONObject eq = earthquakes.getJSONObject(i);
-                        JSONObject eqprop = eq.getJSONObject("properties");
-                        double mag = eqprop.getDouble("mag");
-                        String place = eqprop.getString("place");
+                        JSONObject eqProp = eq.getJSONObject("properties");
+                        double mag = eqProp.getDouble("mag");
+                        String place = eqProp.getString("place");
                         String direction;
                         if (place.contains(LOCATION_SEPARATOR)) {
                             direction = place.substring(0, place.indexOf(LOCATION_SEPARATOR) + 4);
@@ -125,10 +125,10 @@ public class EarthquakeActivity extends AppCompatActivity {
                             direction = getString(R.string.default_toptext);
                         }
                         SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-                        String date = dateFormatter.format(new Date(eqprop.getLong("time")));
+                        String date = dateFormatter.format(new Date(eqProp.getLong("time")));
                         dateFormatter = new SimpleDateFormat("h:mm a", Locale.US);
-                        String hour = dateFormatter.format(new Date(eqprop.getLong("time")));
-                        String urlEq = eqprop.getString("url");
+                        String hour = dateFormatter.format(new Date(eqProp.getLong("time")));
+                        String urlEq = eqProp.getString("url");
                         fetchedEarthquakes.add(new Earthquake(mag, place, direction, date, hour, urlEq));
                         
                         final int progress = (int) ((i / (float) earthquakes.length()) * 100) + 1;
@@ -186,10 +186,10 @@ public class EarthquakeActivity extends AppCompatActivity {
         HttpHandler() {
         }
 
-        String makeServiceCall(String reqUrl) {
+        String makeServiceCall() {
             String response = null;
             try {
-                URL url = new URL(reqUrl);
+                URL url = new URL(EarthquakeActivity.USGS_REQUEST_URL);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 try (InputStream in = new BufferedInputStream(conn.getInputStream())) {

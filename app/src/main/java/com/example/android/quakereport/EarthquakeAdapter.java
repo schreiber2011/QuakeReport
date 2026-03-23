@@ -15,17 +15,17 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 /**
- * Criado por schreiber em 1 de jan de 2018.
- * Um objeto {@link EarthquakeAdapter} sabe como popular um item de uma lista
- * com os dodos de {@link Earthquake}
+ * Created by Schreiber em 1 de jan de 2018.
+ * An objet {@link EarthquakeAdapter} knows how to create a list item layout for each earthquake
+ * in the data source (a list of {@link Earthquake} objects).
  */
 
 class EarthquakeAdapter extends ArrayAdapter<Earthquake>{
 
     /**
-     * Constrói um novo objeto {@link EarthquakeAdapter}
-     * @param context do app
-     * @param objects é a lista de terremoto, que é a fonte de dados para o adapter
+     * Construct a new object {@link EarthquakeAdapter}
+     * @param context from app
+     * @param objects is the list of earthquakes, which is the data source of the adapter
      */
     EarthquakeAdapter(@NonNull Context context, @NonNull List<Earthquake> objects) {
         super(context, 0, objects);
@@ -39,23 +39,23 @@ class EarthquakeAdapter extends ArrayAdapter<Earthquake>{
     static class ViewHolder {TextView mMag; TextView mLoc; TextView mDir; TextView mDat; TextView mHor;}
 
     /**
-     * Sobrescreve o método getView
-     * @param position é a posição do item
-     * @param convertView é a refer. da view
-     * @param parent é a refer. do ViewGroup pai
-     * @return um lista de views que mostra a informação sobre os terremotos
+     * Returns a list item view that displays information about the earthquake at the given position
+     * in the list of earthquakes.
+     * @param position is the position in the list of earthquakes
+     * @param convertView is a recycled view to populate
+     * @param parent is the parent view
+     * @return a list item view
      */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ViewHolder holder;
-        // Checa se existe uma list (convertView) que pode ser reciclada,
-        // se for nula, então infla um novo item na lista do layout.
-        //View listItemView = convertView;
+        // Checks if there is an existing list item view (called convertView) that we can reuse,
+        // if not, then inflate a new list item layout.
         if (convertView == null) {
-            convertView = mInflater(parent);//LayoutInflater.from(getContext()).inflate(
-                    //R.layout.earthquake_list_item, parent, false);
-            //Cria o holder, encontras as IDs e seta a tag
+            convertView = mInflater(parent);
+
+            // Create a new ViewHolder object we can reuse a row
             holder = new ViewHolder();
             holder.mMag = convertView.findViewById(R.id.magnitude);
             holder.mLoc = convertView.findViewById(R.id.location);
@@ -63,14 +63,14 @@ class EarthquakeAdapter extends ArrayAdapter<Earthquake>{
             holder.mDat = convertView.findViewById(R.id.date);
             holder.mHor = convertView.findViewById(R.id.hour);
             convertView.setTag(holder);
-        } else { //Pega a tag to holder já criado
+        } else { // Gets the ViewHolder object from the holder field
             holder = (ViewHolder) convertView.getTag();
         }
 
-        //Encontra o terremoto na posição dada
+        // Find the earthquake at the given position in the list of earthquakes
         Earthquake currentEarthquake = getItem(position);
 
-        //Seta os textos
+        // Set the proper background color on the magnitude circle.
         assert currentEarthquake != null;
         holder.mMag.setText(formatMagnitude(currentEarthquake.getmMagnitude()));
         holder.mLoc.setText(currentEarthquake.getmLocation());
@@ -78,22 +78,20 @@ class EarthquakeAdapter extends ArrayAdapter<Earthquake>{
         holder.mDat.setText(currentEarthquake.getmDate());
         holder.mHor.setText(currentEarthquake.getmHour());
 
-        // Configure a cor de fundo apropriada no círculo de magnitude.
-        // Busque o fundo do TextView, que é um GradientDrawable.
+        // Configures the background color of the magnitude circle
         GradientDrawable magnitudeCircle = (GradientDrawable) holder.mMag.getBackground();
 
-        // Obtenha a cor de fundo apropriada, baseada na magnitude do terremoto atual
+        // Obtains the appropriate background color based on the current earthquake magnitude
         int magnitudeColor = getMagnitudeColor(currentEarthquake.getmMagnitude());
 
-        // Configure a cor no círculo de magnitude
+        // Configures the background color of the magnitude circle
         magnitudeCircle.setColor(magnitudeColor);
 
         return convertView;
     }
 
     /**
-     * Retorna a string magnitude formatada mostrando 1 casa decimal (i.e. "3.2")
-     * de um valor de magnitude decimal.
+     * Returns a magnitude string with one decimal (i.e. "3.2")
      */
     private String formatMagnitude(double magnitude) {
         DecimalFormat magnitudeFormat = new DecimalFormat("0.0");

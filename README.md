@@ -4,6 +4,10 @@ Quake Report App
 This app displays a list of recent earthquakes in the world
 from the U.S. Geological Survey (USGS) organization.
 
+The list display was modified to use a caching with Adapter.
+Some geek on Android's YouTube channel explained that but I lost
+the link. 
+
 Used in a Udacity course in the Beginning Android Nanodegree.
 
 More info on the USGS Earthquake API available at:
@@ -12,9 +16,8 @@ https://earthquake.usgs.gov/fdsnws/event/1/
 Pre-requisites
 --------------
 
-- Android SDK v23
-- Android Build Tools v23.0.2
-- Android Support Repository v23.3.0
+- Android SDK v34
+- Android Support Repository v28.0.0
 
 Getting Started
 ---------------
